@@ -3,11 +3,13 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract EthStaking is Ownable {
+contract EthStaking is Ownable, ReentrancyGuard {
     IERC20 public fitechToken; // Fitech token contract
-    uint256 public rewardRate = 10; // 10 FIT tokens per ETH per staking period
+    uint256 public rewardRate = 10; // 10 FIT tokens per ETH per staking period (base rate)
     uint256 public stakingPeriod = 30 days; // Staking duration
+    uint256 public constant FIT_TOKEN_DECIMALS = 10**18; // FIT token has 18 decimals
 
     struct Stake {
         uint256 amount; // Staked ETH amount
@@ -35,7 +37,7 @@ contract EthStaking is Ownable {
     }
 
     // Unstake ETH and claim rewards
-    function unstake() external {
+    function unstake() external nonReentrant {
         Stake memory userStake = stakes[msg.sender];
         require(userStake.amount > 0, "No stake found");
         require(block.timestamp >= userStake.timestamp + stakingPeriod, "Staking period not over");
@@ -58,6 +60,7 @@ contract EthStaking is Ownable {
     function claimRewards() external {
         uint256 reward = rewards[msg.sender];
         require(reward > 0, "No rewards to claim");
+        require(fitechToken.balanceOf(address(this)) >= reward, "Insufficient FIT tokens");
 
         rewards[msg.sender] = 0;
         require(fitechToken.transfer(msg.sender, reward), "Reward transfer failed");
@@ -68,7 +71,8 @@ contract EthStaking is Ownable {
     function calculateReward(address user) public view returns (uint256) {
         Stake memory userStake = stakes[user];
         if (userStake.amount == 0) return 0;
-        return (userStake.amount * rewardRate) / 1 ether; // Reward in FIT tokens
+        // Scale reward to FIT token decimals (18)
+        return (userStake.amount * rewardRate * FIT_TOKEN_DECIMALS) / 1 ether;
     }
 
     // Fund contract with FIT tokens for rewards (owner only)

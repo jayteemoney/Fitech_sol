@@ -47,9 +47,8 @@ describe("EthStaking", function () {
         await ethStaking.connect(user1).unstake();
         const reward = await ethStaking.rewards(user1.address);
         console.log("Reward calculated:", ethers.formatUnits(reward, 18));
-        expect(reward).to.be.closeTo(
+        expect(reward).to.equal(
             ethers.parseUnits("10", 18),
-            ethers.parseUnits("0.001", 18),
             "Reward calculation incorrect"
         );
     });
@@ -63,14 +62,12 @@ describe("EthStaking", function () {
         await ethers.provider.send("evm_mine", []);
 
         await ethStaking.connect(user1).unstake();
-        const reward = await ethStaking.rewards(user1.address);
         await ethStaking.connect(user1).claimRewards();
 
         const balance = await fitechToken.balanceOf(user1.address);
         console.log("User1 FIT balance:", ethers.formatUnits(balance, 18));
-        expect(balance).to.be.closeTo(
+        expect(balance).to.equal(
             ethers.parseUnits("10", 18),
-            ethers.parseUnits("0.001", 18),
             "Reward claim incorrect"
         );
         expect(await ethStaking.rewards(user1.address)).to.equal(0, "Rewards not reset");
