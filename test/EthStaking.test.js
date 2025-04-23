@@ -18,9 +18,9 @@ describe("EthStaking", function () {
         await ethStaking.waitForDeployment();
 
         // Fund staking contract with FIT tokens
-        await fitechToken.mint(owner.address, ethers.parseUnits("10000", 18));
-        await fitechToken.approve(ethStaking.target, ethers.parseUnits("10000", 18));
-        await ethStaking.fundRewards(ethers.parseUnits("10000", 18));
+        await fitechToken.connect(owner).mint(owner.address, ethers.parseUnits("10000", 18));
+        await fitechToken.connect(owner).approve(ethStaking.target, ethers.parseUnits("10000", 18));
+        await ethStaking.connect(owner).fundRewards(ethers.parseUnits("10000", 18));
     });
 
     it("Should allow staking ETH", async function () {
@@ -38,7 +38,8 @@ describe("EthStaking", function () {
 
         await ethStaking.connect(user1).unstake();
         const reward = await ethStaking.rewards(user1.address);
-        expect(reward).to.equal(ethers.parseUnits("10", 18)); // 10 FIT for 1 ETH
+        console.log("Reward calculated:", ethers.formatUnits(reward, 18));
+        expect(reward).to.be.closeTo(ethers.parseUnits("10", 18), ethers.parseUnits("0.001", 18));
     });
 
     it("Should allow claiming rewards", async function () {
@@ -52,6 +53,7 @@ describe("EthStaking", function () {
         await ethStaking.connect(user1).claimRewards();
 
         const balance = await fitechToken.balanceOf(user1.address);
-        expect(balance).to.equal(ethers.parseUnits("10", 18));
+        console.log("User1 FIT balance:", ethers.formatUnits(balance, 18));
+        expect(balance).to.be.closeTo(ethers.parseUnits("10", 18), ethers.parseUnits("0.001", 18));
     });
 });

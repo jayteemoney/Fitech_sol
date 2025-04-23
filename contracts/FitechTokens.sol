@@ -5,11 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract FitechToken is ERC20, Ownable {
-    constructor(address initialOwner) ERC20("Fitech Token", "FIT") Ownable(initialOwner) {
-        _mint(initialOwner, 1000000 * 10 ** decimals()); 
-    }
+    constructor(address initialOwner) ERC20("FitechToken", "FIT") Ownable(initialOwner) {}
 
-    function mint(address to, uint256 amount) public onlyOwner {
+    function mint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);
     }
 }
