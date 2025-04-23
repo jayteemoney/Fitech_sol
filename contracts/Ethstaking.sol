@@ -67,7 +67,7 @@ contract EthStaking is Ownable {
     // Calculate reward based on staked amount
     function calculateReward(address user) public view returns (uint256) {
         Stake memory userStake = stakes[user];
-        if (user Stake.amount == 0) return 0;
+        if (userStake.amount == 0) return 0;
         return (userStake.amount * rewardRate) / 1 ether; // Reward in FIT tokens
     }
 
